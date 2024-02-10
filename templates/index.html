@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Location Search</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        #result {
+            position: absolute;
+            width: 100%;
+            max-width: 870px;
+            cursor: pointer;
+            overflow-y: auto;
+            max-height: 400px;
+            box-sizing: border-box;
+            z-index: 1001;
+            background-color: #f9f9f9; /* Light background color */
+            border: 1px solid #ddd; /* Border color */
+            border-radius: 4px; /* Rounded corners */
+            padding: 5px; /* Padding */
+        }
+
+        .link-class:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+
+<body>
+    <br /><br />
+    <div class="container" style="width: 900px;">
+        <h2 align="center">Location Search</h2>
+        <br /><br />
+        <div align="center">
+            <input type="text" name="search" id="search" placeholder="Search Locations" class="form-control" />
+        </div>
+        <ul class="list-group" id="result"></ul>
+    </div>
+</body>
+
+<script>
+    $("#search").keyup(function () {
+        var search = $('#search').val();
+        if (search == "") {
+            return false;
+        }
+
+        $('#result').html('');
+
+        var request = $.ajax({
+            url: "http://localhost:5001/search?q=" + search,
+            method: "GET"
+        });
+
+        request.done(function (data) {
+            $.each(data, function (key, value) {
+                var entity = value.normalized || {};
+                var entityName = entity.City || value.entity_name || 'Unknown';
+                var state = entity.State || 'Unknown';
+                var latitude = entity.latitude || value.latitude || 'Unknown';
+                var longitude = entity.longitude || value.longitude || 'Unknown';
+                $('#result').append('<li class="list-group-item link-class">' + entityName + (state !== 'Unknown' ? ', ' + state : '') + ' | Latitude: ' + latitude + ' | Longitude: ' + longitude + '</li>');
+            });
+        });
+
+        request.fail(function (jqXHR, textStatus) {
+            console.log("Request failed: " + textStatus);
+        });
+    });
+</script>
+
+</html>
