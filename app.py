@@ -86,9 +86,21 @@ def search_location():
     }
 
     should_conditions = []
-    for index_name, fields in field_mappings.items():
+    for fields in field_mappings.values():
         for field in fields:
-            should_conditions.append({"match": {field: {"query": search_token, "operator": "or"}}})
+            should_conditions.append({
+                "bool": {
+                    "should": [
+                        {"term": {field: search_token}},
+
+                        {"match_phrase": {field: {"query": search_token, "boost": 2}}},
+
+                        {"prefix": {field: {"value": search_token, "boost": 1.5}}},
+
+                        {"match": {"alternatenames": {"query": search_token, "fuzziness": "AUTO"}}}
+                    ]
+                }
+            })
 
     search_query = {
         "query": {
